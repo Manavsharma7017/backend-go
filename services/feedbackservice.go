@@ -1,13 +1,13 @@
 package services
 
 import (
+	// "backend/config"
 	"backend/config"
 	"backend/database"
 	"backend/models"
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -103,8 +103,8 @@ func CreateFeedback(feedback *models.Feedback, userrespocedata models.UserQuesti
 
 	// Send POST request to FastAPI
 	url := config.GetBAckedUrl()
-	fullURL := fmt.Sprintf("%s/submit", url)
-	resp, err := http.Post(fullURL, "application/json", bytes.NewBuffer(jsonData))
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("❌ HTTP request error: %v", err)
 		return nil, err
