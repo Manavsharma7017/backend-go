@@ -1,0 +1,40 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build output
+/app/bin/
+bin/
+build/
+dist/
+*.o
+
+# VCS
+.git
+.gitignore
+
+# Dependency cache (optional if using Go modules properly)
+vendor/
+
+# Editor/IDE config
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# OS junk files
+.DS_Store
+Thumbs.db
+
+# Environment files (VERY important)
+.env
+.env.*
+
+# Docker-related
+Dockerfile
+.dockerignore
