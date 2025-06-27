@@ -1,7 +1,6 @@
 package services
 
 import (
-	// "backend/config"
 	"backend/config"
 	"backend/database"
 	"backend/models"
@@ -9,7 +8,9 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"net"
 	"net/http"
+	"time"
 )
 
 type QA struct {
@@ -45,6 +46,7 @@ func GetFeedbackByResponseID(responseID string, feddback *models.Feedback) (*mod
 	}
 	return feddback, nil
 }
+
 func historymanager(sessionId string) ([]QA, error) {
 	var questions []models.UserQuestion
 
@@ -101,12 +103,34 @@ func CreateFeedback(feedback *models.Feedback, userrespocedata models.UserQuesti
 		return nil, err
 	}
 
-	// Send POST request to FastAPI
 	url := config.GetBAckedUrl()
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	// Create custom HTTP client with longer timeout
+	client := &http.Client{
+		Timeout: 60 * time.Second, // Full request timeout
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second, // TCP connection timeout
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			TLSHandshakeTimeout: 10 * time.Second,
+		},
+	}
+
+	var resp *http.Response
+	const maxRetries = 5
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		resp, err = client.Post(url, "application/json", bytes.NewBuffer(jsonData))
+		if err == nil {
+			break // success
+		}
+		log.Printf("⚠️ HTTP request failed on attempt %d: %v", attempt, err)
+		time.Sleep(5 * time.Second)
+	}
+
 	if err != nil {
-		log.Printf("❌ HTTP request error: %v", err)
+		log.Printf("❌ HTTP request failed after retries: %v", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
